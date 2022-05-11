@@ -10,7 +10,7 @@ from keras import regularizers
 def binary_classification_loss(concat_true, concat_pred):
     t_true = concat_true[:, 1]
     t_pred = concat_pred[:, 2]
-    t_pred = (t_pred + 0.001) / 1.002
+    t_pred = (t_pred + 0.001) / 1.002 # TODO: NOT THE SAME AS OTHER SCALING USED FURTHER DOWN?
     losst = tf.reduce_sum(K.binary_crossentropy(t_true, t_pred))
 
     return losst

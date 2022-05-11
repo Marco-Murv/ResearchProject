@@ -12,9 +12,19 @@ from keras.callbacks import EarlyStopping, ModelCheckpoint, TensorBoard, ReduceL
 
 
 def _split_output(yt_hat, t, y, y_scaler, x, index):
-    q_t0 = y_scaler.inverse_transform(yt_hat[:, 0].copy())
-    q_t1 = y_scaler.inverse_transform(yt_hat[:, 1].copy())
+    # print(yt_hat[:, 0].shape)
+    yt_hat_t0_reshaped = yt_hat[:, 0].copy()
+    yt_hat_t0_reshaped.shape = [yt_hat_t0_reshaped.shape[0], 1]
+    yt_hat_t1_reshaped = yt_hat[:, 1].copy()
+    yt_hat_t1_reshaped.shape = [yt_hat_t1_reshaped.shape[0], 1]
+
+    q_t0 = y_scaler.inverse_transform(yt_hat_t0_reshaped)
+    q_t1 = y_scaler.inverse_transform(yt_hat_t1_reshaped)
     g = yt_hat[:, 2].copy()
+
+    # q_t0 = y_scaler.inverse_transform(yt_hat[:, 0].copy())
+    # q_t1 = y_scaler.inverse_transform(yt_hat[:, 1].copy())
+    # g = yt_hat[:, 2].copy()
 
     if yt_hat.shape[1] == 4:
         eps = yt_hat[:, 3][0]
@@ -32,6 +42,7 @@ def _split_output(yt_hat, t, y, y_scaler, x, index):
 def train_and_predict_dragons(t, y_unscaled, x, targeted_regularization=True, output_dir='',
                               knob_loss=dragonnet_loss_binarycross, ratio=1., dragon='', val_split=0.2, batch_size=64):
     verbose = 0
+    # print(y_unscaled.shape)
     y_scaler = StandardScaler().fit(y_unscaled)
     y = y_scaler.transform(y_unscaled)
     train_outputs = []
@@ -57,8 +68,9 @@ def train_and_predict_dragons(t, y_unscaled, x, targeted_regularization=True, ou
     tf.random.set_random_seed(i)
     np.random.seed(i)
     # train_index, test_index = train_test_split(np.arange(x.shape[0]), test_size=0, random_state=1)
+    #TODO: SET TEST SIZE
     train_index, test_index = train_test_split(np.arange(x.shape[0]), test_size=10, random_state=1)
-    test_index = train_index
+    test_index = train_index # TODO: wat
 
     x_train, x_test = x[train_index], x[test_index]
     y_train, y_test = y[train_index], y[test_index]
@@ -66,25 +78,25 @@ def train_and_predict_dragons(t, y_unscaled, x, targeted_regularization=True, ou
 
     yt_train = np.concatenate([y_train, t_train], 1)
 
-    import time;
+    import time
     start_time = time.time()
 
-    dragonnet.compile(
-        optimizer=Adam(lr=1e-3),
-        loss=loss, metrics=metrics)
-
-    adam_callbacks = [
-        TerminateOnNaN(),
-        EarlyStopping(monitor='val_loss', patience=2, min_delta=0.),
-        ReduceLROnPlateau(monitor='loss', factor=0.5, patience=5, verbose=verbose, mode='auto',
-                          min_delta=1e-8, cooldown=0, min_lr=0)
-
-    ]
-
-    dragonnet.fit(x_train, yt_train, callbacks=adam_callbacks,
-                  validation_split=val_split,
-                  epochs=100,
-                  batch_size=batch_size, verbose=verbose)
+    # dragonnet.compile(
+    #     optimizer=Adam(lr=1e-3),
+    #     loss=loss, metrics=metrics)
+    #
+    # adam_callbacks = [
+    #     TerminateOnNaN(),
+    #     EarlyStopping(monitor='val_loss', patience=2, min_delta=0.),
+    #     ReduceLROnPlateau(monitor='loss', factor=0.5, patience=5, verbose=verbose, mode='auto',
+    #                       min_delta=1e-8, cooldown=0, min_lr=0)
+    #
+    # ]
+    #
+    # dragonnet.fit(x_train, yt_train, callbacks=adam_callbacks,
+    #               validation_split=val_split,
+    #               epochs=100,
+    #               batch_size=batch_size, verbose=verbose)
 
     sgd_callbacks = [
         TerminateOnNaN(),

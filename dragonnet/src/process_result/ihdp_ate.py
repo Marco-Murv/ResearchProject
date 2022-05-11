@@ -2,7 +2,7 @@ import copy
 
 from numpy import load
 
-from semi_parametric_estimation.ate import *
+from src.semi_parametric_estimation.ate import *
 
 
 def load_truth(replication, knob):
@@ -10,7 +10,7 @@ def load_truth(replication, knob):
     loading ground truth data
     """
 
-    file_path = '../../result/{}/{}/simulation_outputs.npz'.format(knob, replication)
+    file_path = 'results/ihdp/{}/{}/simulation_outputs.npz'.format(knob, replication)
     data = load(file_path)
     mu_0 = data['mu_0']
     mu_1 = data['mu_1']
@@ -23,7 +23,7 @@ def load_data(knob='default', replication=1, model='baseline', train_test='test'
     loading train test experiment results
     """
 
-    file_path = '../../result/{}/'.format(knob)
+    file_path = 'results/ihdp/{}/'.format(knob)
     data = load(file_path + '{}/{}/0_replication_{}.npz'.format(replication, model, train_test))
 
     return data['q_t0'].reshape(-1, 1), data['q_t1'].reshape(-1, 1), data['g'].reshape(-1, 1), \
@@ -48,7 +48,8 @@ def make_table(train_test='train', n_replication=50):
             'nednet': {'baseline': 0, 'targeted_regularization': 0}}
     tmle_dict = copy.deepcopy(dict)
 
-    for knob in ['dragonnet', 'tarnet']:
+    # for knob in ['dragonnet', 'tarnet']:
+    for knob in ['dragonnet']:
         for model in ['baseline', 'targeted_regularization']:
             simple_errors, tmle_errors = [], []
             for rep in range(n_replication):
