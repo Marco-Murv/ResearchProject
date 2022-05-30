@@ -32,9 +32,9 @@ def _split_output(yt_hat, t, y, y_scaler, x, index):
         eps = np.zeros_like(yt_hat[:, 2])
 
     y = y_scaler.inverse_transform(y.copy())
-    var = "average propensity for treated: {} and untreated: {}".format(g[t.squeeze() == 1.].mean(),
-                                                                        g[t.squeeze() == 0.].mean())
-    print(var)
+    # var = "average propensity for treated: {} and untreated: {}".format(g[t.squeeze() == 1.].mean(),
+    #                                                                     g[t.squeeze() == 0.].mean())
+    # print(var)
 
     return {'q_t0': q_t0, 'q_t1': q_t1, 'g': g, 't': t, 'y': y, 'x': x, 'index': index, 'eps': eps}
 
@@ -292,6 +292,78 @@ def run_ihdp(data_base_dir='/Users/claudiashi/data/ihdp_csv', output_dir='~/resu
             for num, output in enumerate(train_output):
                 np.savez_compressed(os.path.join(train_output_dir, "{}_replication_train.npz".format(num)),
                                     **output)
+
+
+# Used for getting results for comparing overlap violation performance
+def train_and_predict_dragons_trimmed(t, y_unscaled, x, targeted_regularization=True, output_dir='',
+                              knob_loss=dragonnet_loss_binarycross, ratio=1., dragon='', val_split=0.2, batch_size=64):
+    verbose = 0
+    y_scaler = StandardScaler().fit(y_unscaled)
+    y = y_scaler.transform(y_unscaled)
+
+    dragonnet = make_dragonnet(x.shape[1], 0.01)
+    metrics = [regression_loss, binary_classification_loss, treatment_accuracy, track_epsilon]
+
+    if targeted_regularization:
+        loss = make_tarreg_loss(ratio=ratio, dragonnet_loss=knob_loss)
+    else:
+        loss = knob_loss
+
+    i = 0
+    tf.random.set_random_seed(i)
+    np.random.seed(i)
+    train_index = list(range(t.shape[0]))
+
+    x_train = x[train_index]
+    y_train = y[train_index]
+    t_train = t[train_index]
+
+    yt_train = np.concatenate([y_train, t_train], 1)
+
+
+
+    dragonnet.compile(
+        optimizer=Adam(lr=1e-3),
+        loss=loss, metrics=metrics)
+
+    adam_callbacks = [
+        TerminateOnNaN(),
+        EarlyStopping(monitor='val_loss', patience=2, min_delta=0.),
+        ReduceLROnPlateau(monitor='loss', factor=0.5, patience=5, verbose=verbose, mode='auto',
+                          min_delta=1e-8, cooldown=0, min_lr=0)
+
+    ]
+
+    dragonnet.fit(x_train, yt_train, callbacks=adam_callbacks,
+                  validation_split=val_split,
+                  epochs=100,
+                  batch_size=batch_size, verbose=verbose)
+
+
+
+    sgd_callbacks = [
+        TerminateOnNaN(),
+        EarlyStopping(monitor='val_loss', patience=40, min_delta=0.),
+        ReduceLROnPlateau(monitor='loss', factor=0.5, patience=5, verbose=verbose, mode='auto',
+                          min_delta=0., cooldown=0, min_lr=0)
+    ]
+
+    sgd_lr = 1e-5
+    momentum = 0.9
+    dragonnet.compile(optimizer=SGD(lr=sgd_lr, momentum=momentum, nesterov=True), loss=loss,
+                      metrics=metrics)
+    dragonnet.fit(x_train, yt_train, callbacks=sgd_callbacks,
+                  validation_split=val_split,
+                  epochs=300,
+                  batch_size=batch_size, verbose=verbose)
+
+    yt_hat_train = dragonnet.predict(x_train)
+
+    train_outputs = _split_output(yt_hat_train, t_train, y_train, y_scaler, x_train, train_index)
+    K.clear_session()
+
+    return train_outputs
+
 
 
 def turn_knob(data_base_dir='/Users/claudiashi/data/test/', knob='dragonnet',

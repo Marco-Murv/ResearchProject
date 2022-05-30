@@ -1,7 +1,6 @@
 import numpy as np
 from scipy.special import logit, expit
 from scipy.optimize import minimize
-
 from .helpers import truncate_by_g, mse, cross_entropy, truncate_all_by_g
 from .att import att_estimates
 
@@ -37,9 +36,8 @@ def psi_tmle_bin_outcome(q_t0, q_t1, g, t, y, truncate_level=0.05):
     return np.mean(ite)
 
 
-def psi_tmle_cont_outcome(q_t0, q_t1, g, t, y, eps_hat=None, truncate_level=0.05):
-    q_t0, q_t1, g, t, y = truncate_all_by_g(q_t0, q_t1, g, t, y, truncate_level)
-
+def psi_tmle_cont_outcome(q_t0, q_t1, g, t, y, eps_hat=None):
+    # q_t0, q_t1, g, t, y = truncate_all_by_g(q_t0, q_t1, g, t, y, truncate_level)
     g_loss = mse(g, t)
     h = t * (1.0/g) - (1.0-t) / (1.0 - g)
     full_q = (1.0-t)*q_t0 + t*q_t1 # predictions from unperturbed model
