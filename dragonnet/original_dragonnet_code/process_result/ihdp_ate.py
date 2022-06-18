@@ -2,7 +2,7 @@ import copy
 
 from numpy import load
 
-from src.semi_parametric_estimation.ate import *
+from original_dragonnet_code.semi_parametric_estimation.ate import *
 
 
 def load_truth(replication, knob):

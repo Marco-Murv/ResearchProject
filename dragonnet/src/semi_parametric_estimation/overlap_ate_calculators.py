@@ -1,8 +1,8 @@
 import numpy as np
 from scipy.special import logit, expit
 from scipy.optimize import minimize
-from .helpers import truncate_by_g, mse, cross_entropy, truncate_all_by_g
-from .att import att_estimates
+from original_dragonnet_code.semi_parametric_estimation.helpers import truncate_by_g, mse, cross_entropy, truncate_all_by_g
+from original_dragonnet_code.semi_parametric_estimation.att import att_estimates
 
 
 def _perturbed_model_bin_outcome(q_t0, q_t1, g, t, eps):
@@ -37,7 +37,6 @@ def psi_tmle_bin_outcome(q_t0, q_t1, g, t, y, truncate_level=0.05):
 
 
 def psi_tmle_cont_outcome(q_t0, q_t1, g, t, y, eps_hat=None):
-    # q_t0, q_t1, g, t, y = truncate_all_by_g(q_t0, q_t1, g, t, y, truncate_level)
     g_loss = mse(g, t)
     h = t * (1.0/g) - (1.0-t) / (1.0 - g)
     full_q = (1.0-t)*q_t0 + t*q_t1 # predictions from unperturbed model
@@ -82,7 +81,7 @@ def psi_aiptw(q_t0, q_t1, g, t, y, truncate_level=0.05):
 
 def psi_naive(q_t0, q_t1, g, t, y, truncate_level=0.):
     ite = (q_t1 - q_t0)
-    return np.mean(truncate_by_g(ite, g, level=truncate_level))
+    return np.mean(ite)
 
 
 def psi_very_naive(q_t0, q_t1, g, t, y, truncate_level=0.):

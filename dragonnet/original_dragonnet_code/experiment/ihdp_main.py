@@ -68,9 +68,8 @@ def train_and_predict_dragons(t, y_unscaled, x, targeted_regularization=True, ou
     tf.random.set_random_seed(i)
     np.random.seed(i)
     # train_index, test_index = train_test_split(np.arange(x.shape[0]), test_size=0, random_state=1)
-    #TODO: SET TEST SIZE
     train_index, test_index = train_test_split(np.arange(x.shape[0]), test_size=10, random_state=1)
-    test_index = train_index # TODO: wat
+    test_index = train_index
 
     x_train, x_test = x[train_index], x[test_index]
     y_train, y_test = y[train_index], y[test_index]
@@ -81,22 +80,22 @@ def train_and_predict_dragons(t, y_unscaled, x, targeted_regularization=True, ou
     import time
     start_time = time.time()
 
-    # dragonnet.compile(
-    #     optimizer=Adam(lr=1e-3),
-    #     loss=loss, metrics=metrics)
-    #
-    # adam_callbacks = [
-    #     TerminateOnNaN(),
-    #     EarlyStopping(monitor='val_loss', patience=2, min_delta=0.),
-    #     ReduceLROnPlateau(monitor='loss', factor=0.5, patience=5, verbose=verbose, mode='auto',
-    #                       min_delta=1e-8, cooldown=0, min_lr=0)
-    #
-    # ]
-    #
-    # dragonnet.fit(x_train, yt_train, callbacks=adam_callbacks,
-    #               validation_split=val_split,
-    #               epochs=100,
-    #               batch_size=batch_size, verbose=verbose)
+    dragonnet.compile(
+        optimizer=Adam(lr=1e-3),
+        loss=loss, metrics=metrics)
+
+    adam_callbacks = [
+        TerminateOnNaN(),
+        EarlyStopping(monitor='val_loss', patience=2, min_delta=0.),
+        ReduceLROnPlateau(monitor='loss', factor=0.5, patience=5, verbose=verbose, mode='auto',
+                          min_delta=1e-8, cooldown=0, min_lr=0)
+
+    ]
+
+    dragonnet.fit(x_train, yt_train, callbacks=adam_callbacks,
+                  validation_split=val_split,
+                  epochs=100,
+                  batch_size=batch_size, verbose=verbose)
 
     sgd_callbacks = [
         TerminateOnNaN(),
@@ -249,7 +248,6 @@ def run_ihdp(data_base_dir='/Users/claudiashi/data/ihdp_csv', output_dir='~/resu
     print("the dragon is {}".format(dragon))
 
     simulation_files = sorted(glob.glob("{}/*.csv".format(data_base_dir)))
-    # print(simulation_files)
 
     for idx, simulation_file in enumerate(simulation_files):
 
@@ -294,7 +292,7 @@ def run_ihdp(data_base_dir='/Users/claudiashi/data/ihdp_csv', output_dir='~/resu
                                     **output)
 
 
-# Used for getting results for comparing overlap violation performance
+# Added for overlap investigation to compare to model with rescaling/trimming
 def train_and_predict_dragons_trimmed(t, y_unscaled, x, targeted_regularization=True, output_dir='',
                               knob_loss=dragonnet_loss_binarycross, ratio=1., dragon='', val_split=0.2, batch_size=64):
     verbose = 0
