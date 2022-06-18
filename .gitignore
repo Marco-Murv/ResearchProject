@@ -5,4 +5,5 @@ dragonnet/src/process_result/__pycache__/
 
 dragonnet/src/semi_parametric_estimation/__pycache__/
 
-*.csv
+dragonnet/synth_data
+dragonnet/synth_result
