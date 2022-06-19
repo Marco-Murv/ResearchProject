@@ -1,6 +1,6 @@
 # DragonNet performance analysis under overlap violations
 
-- This repository is part of the Research Project (CSE3300, Q4 2021/22) of the CSE bachelor at TU Delft. The other projects can be found at this [page](https://github.com/TU-Delft-CSE/Research-Project).
+- This repository is part of the Research Project (CSE3000, Q4 2021/22) of the CSE bachelor at TU Delft. The other projects can be found at this [page](https://github.com/TU-Delft-CSE/Research-Project).
 
 - The goal is to understand how well the [DragonNet](https://arxiv.org/pdf/1906.02120.pdf) handles situations which have low overlap between treated and non-treated subpopulations.
 
